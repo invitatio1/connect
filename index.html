@@ -3,128 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Multi-LP </title>
+    <title>Generator Multi-LP Ultra Compact</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; } 
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 600px; } 
-        
-        h2 { text-align: center; margin-bottom: 20px; color: #333; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
-        
-        input[type="text"], input[type="number"], select { 
-            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; 
+        /* --- CSS VARIABLES (THEMING) --- */
+        :root {
+            /* Light Mode (Default) */
+            --bg-body: #f0f4f8;
+            --bg-card: #ffffff;
+            --text-main: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --input-focus-ring: rgba(102, 126, 234, 0.1);
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --switch-bg-off: #cbd5e0;
+            --switch-bg-on: #48bb78;
+            --btn-reset-bg: #cbd5e0;
+            --btn-reset-text: #4a5568;
+            --btn-reset-hover: #a0aec0;
+            --lp-selected-bg: #f0fff4;
+            --lp-selected-border: #48bb78;
+            --shadow-card: 0 10px 25px rgba(0,0,0,0.05);
+            --shadow-input: 0 0 0 3px var(--input-focus-ring);
         }
-        input:focus, select:focus { border-color: #007bff; outline: none; }
 
-        /* Toggle Box */
-        .toggle-box {
-            background: #eef2f6;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #dde1e6;
-            margin-bottom: 15px;
+        [data-theme="dark"] {
+            /* Dark Mode Overrides */
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-secondary: #cbd5e0;
+            --text-muted: #64748b;
+            --border: #334155;
+            --input-bg: #0f172a; /* Input gelap */
+            --input-border: #334155;
+            --input-focus-ring: rgba(102, 126, 234, 0.2);
+            --switch-bg-off: #475569;
+            --btn-reset-bg: #334155;
+            --btn-reset-text: #94a3b8;
+            --btn-reset-hover: #475569;
+            --lp-selected-bg: rgba(72, 187, 120, 0.1);
+            --lp-selected-border: #48bb78;
+            --shadow-card: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; 
+            background: var(--bg-body); 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center;
+            min-height: 100vh;
+            transition: background 0.3s ease;
+        } 
+        
+        .card { 
+            background: var(--bg-card); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow-card); 
+            width: 100%; 
+            max-width: 600px; 
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        } 
+        
+        /* --- HEADER & TYPOGRAPHY --- */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        h2 { 
+            margin: 0;
+            color: var(--text-main); 
+            /* Font Modern & Bersih */
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 800; 
+            font-size: 1.75rem;
+            letter-spacing: -0.03em; /* Tight tracking agar lebih modern */
+            line-height: 1.1;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--input-bg);
+            color: var(--text-main);
+        }
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-secondary); font-size: 14px; }
+        
+        input[type="text"], input[type="number"] { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border: 2px solid var(--input-border); 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        } 
+        input:focus { 
+            border-color: var(--accent-primary); 
+            outline: none; 
+            box-shadow: var(--shadow-input);
+        }
+
+        /* --- ULTRA COMPACT ADMIN PANEL --- */
+        
+        /* Master Switch Header */
+        .lp-control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 10px;
+            background: var(--input-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .lp-status-text {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Switch Mini */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 32px;
+            height: 16px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--switch-bg-off);
+            transition: .4s;
+            border-radius: 16px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px;
+            width: 12px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--switch-bg-on); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* LP List Grid */
+        .lp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* LP Card Item (Ultra Compact) */
+        .lp-item {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 40px;
+        }
+
+        .lp-item:hover { border-color: var(--text-muted); }
+        
+        .lp-item.selected {
+            border-color: var(--lp-selected-border);
+            background-color: var(--lp-selected-bg);
+        }
+
+        .lp-name { font-weight: bold; font-size: 0.75rem; color: var(--text-main); flex-grow: 1; text-align:center;}
+        
+        /* Checkbox Kecil */
+        .lp-checkbox {
+            width: 14px; 
+            height: 14px;
+            accent-color: var(--switch-bg-on);
             cursor: pointer;
         }
-        .toggle-box input { width: 20px; height: 20px; margin-right: 12px; cursor: pointer; }
-        .toggle-text { font-weight: bold; color: #333; }
-        .toggle-sub { display: block; font-size: 12px; color: #666; margin-top: 2px; }
 
-        /* Dynamic Wrapper */
-        #lpInputWrapper {
-            display: none; 
-            animation: fadeIn 0.3s;
+        /* Disabled State */
+        .lp-container-disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(1);
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- END ULTRA COMPACT --- */
+
+        /* Button Group */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
 
         button { 
-            width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 6px; 
-            font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s;
         } 
-        button:hover { background: #0056b3; } 
+        button:active { transform: scale(0.98); }
 
-        .output-box { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
-        .item { background: #f8f9fa; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 12px; }
-        .copy-btn { background: #e9ecef; border: 1px solid #ccc; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-generate {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+        }
+        .btn-generate:hover { opacity: 0.9; }
+
+        .btn-reset {
+            background: var(--btn-reset-bg);
+            color: var(--btn-reset-text);
+        }
+        .btn-reset:hover { background: var(--btn-reset-hover); }
+
+        /* Output Section */
+        .output-box { 
+            margin-top: 30px; 
+            border-top: 2px dashed var(--border); 
+            padding-top: 20px; 
+            display: none; 
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .output-title { font-weight: bold; color: var(--text-main); }
+
+        .btn-copy-all {
+            background: var(--switch-bg-on);
+            color: white;
+            padding: 8px 15px;
+            font-size: 13px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(72, 187, 120, 0.3);
+        }
+        .btn-copy-all:hover { background: #38a169; }
+
+        .list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 5px;
+            border: 1px solid var(--border);
+        }
+
+        .item { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            padding: 10px 12px; 
+            margin-bottom: 8px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-family: 'Courier New', monospace; 
+            font-size: 12px; 
+            color: var(--text-main);
+        }
+        .item:hover { transform: translateX(2px); border-color: var(--text-muted); }
+        
+        .copy-btn { 
+            background: var(--input-bg); 
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 11px;
+            font-weight: 600;
+        } 
+        .copy-btn:hover { background: var(--border); color: var(--text-main); }
+
+        /* Custom Input for LP */
+        .lp-custom-input {
+            display: none; 
+            margin-top: 5px;
+            padding: 5px;
+            background: rgba(251, 211, 141, 0.1); /* Transparan di dark mode */
+            border: 1px solid #fbd38d;
+            border-radius: 6px;
+        }
+        [data-theme="dark"] .lp-custom-input {
+            background: rgba(251, 211, 141, 0.05);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #toast.show { opacity: 1; bottom: 50px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Generator Multi-LP</h2>
+    <!-- Header dengan H2 bersih dan Toggle Tema -->
+    <div class="header-row">
+        <h2>⚡multi link</h2>
+        <button class="theme-toggle-btn" id="themeToggle" onclick="toggleTheme()" title="Ganti Tema">
+            <!-- Icon Matahari (Default Light) -->
+            <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <!-- Icon Bulan (Hidden by default) -->
+            <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display: none;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+    </div>
 
     <!-- Input Smartlink Utama -->
     <div class="form-group">
-        <label>Smartlink Asli (Tujuan Akhir)</label>
-        <input type="text" id="smartlinkInput" placeholder="https://utnp2r2.bests-meetthesite.com/dhv2005?s1=DIINARYO&cid=funnn006">
+        <label>Smartlink Asli</label>
+        <input type="text" id="smartlinkInput" placeholder="">
     </div>
 
-    <!-- Toggle Gunakan LP -->
-    <div class="toggle-box" onclick="toggleLP()">
-        <input type="checkbox" id="useLPCheck" onclick="event.stopPropagation(); toggleLP()">
-        <div>
-            <div class="toggle-text">Gunakan Landing Page?</div>
+    <!-- Admin Panel LP Section (Ultra Compact) -->
+    <div class="form-group" style="border: 1px solid var(--border); border-radius: 8px; padding: 8px;">
+        
+        <!-- Header: Switch & Status -->
+        <div class="lp-control-header">
+            <div id="lpStatusText" class="lp-status-text">Off (tidak ada)</div>
+            <label class="switch">
+                <input type="checkbox" id="masterSwitch" onchange="toggleMasterSwitch()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- LP List (Grid) -->
+        <div id="lpContainer" class="lp-container-disabled">
+            <div class="lp-grid">
+                <!-- LP 1 (Multi Select Checkbox) -->
+                <div class="lp-item" onclick="toggleLPSelection(this)" data-url="https://invitatio1.github.io/lp1/">
+                    <div class="lp-name">LP 1</div>
+                    <input type="checkbox" class="lp-checkbox">
+                </div>
+
+                <!-- LP 2 -->
+                <div class="lp-item" onclick="toggleLPSelection(this)" data-url="https://invitatio1.github.io/lp2/">
+                    <div class="lp-name">LP 2</div>
+                    <input type="checkbox" class="lp-checkbox">
+                </div>
+
+                <!-- LP 3 -->
+                <div class="lp-item" onclick="toggleLPSelection(this)" data-url="https://invitatio1.github.io/lp3/">
+                    <div class="lp-name">LP 3</div>
+                    <input type="checkbox" class="lp-checkbox">
+                </div>
+            </div>
+
+            <!-- Custom LP Input -->
+            <div class="lp-custom-input">
+                <label style="font-size:10px; margin-bottom:3px;">URL LP Custom:</label>
+                <input type="text" id="lpCustomInput" placeholder="https://..." style="padding:5px; border:1px solid #e2e8f0; font-size:11px;">
+            </div>
         </div>
     </div>
 
-    <!-- Input/Select URL LP -->
-    <div class="form-group" id="lpInputWrapper">
-        <label>Pilih Landing Page:</label>
-        
-        <!-- Dropdown List LP -->
-        <select id="lpInputSelect" onchange="checkCustomLP()">
-            <option value="">-- Pilih Landing Page --</option>
-            <option value="https://invitatio1.github.io/lp1/">LP 1 (invitatio1)</option>
-            <option value="https://invitatio1.github.io/lp2/">LP 2 (invitatio1)</option>
-            <option value="https://invitatio1.github.io/lp3/">LP 3 (invitatio1)</option>
-        </select>
-
-        <!-- Input Manual (Hanya muncul jika pilih 'custom') -->
-        <input type="text" id="lpInputManual" placeholder="Paste URL lain disini..." style="display:none; margin-top:10px;">
-        
-        <div style="font-size:11px; color:#e74c3c; margin-top:5px;">Pastikan file LP sudah dipasang script redirect!</div>
-    </div>
-
     <div class="form-group">
-        <label>Jumlah Link</label>
+        <label>Jumlah Link (per LP)</label>
         <input type="number" id="count" value="10" min="1">
+        <div style="font-size:10px; color:var(--text-muted); margin-top:3px;"></div>
     </div>
 
-    <button onclick="generate()">Generate Link</button>
+    <!-- Tombol Aksi -->
+    <div class="btn-group">
+        <button class="btn-generate" onclick="generate()">🚀 Generate Link</button>
+        <button class="btn-reset" onclick="resetForm()">🔄 Reset</button>
+    </div>
 
-    <div id="outputList" class="output-box"></div>
+    <!-- Output Section -->
+    <div id="outputBox" class="output-box">
+        <div class="output-header">
+            <span class="output-title">Hasil Generate (<span id="resultCount">0</span>):</span>
+            <button class="btn-copy-all" onclick="copyAll()">📋 Salin Semua</button>
+        </div>
+        <div class="list-container" id="outputList"></div>
+    </div>
 </div>
 
+<!-- Toast Notification -->
+<div id="toast">Berhasil disalin!</div>
+
 <script>
-    function toggleLP() {
-        const check = document.getElementById('useLPCheck');
-        const wrapper = document.getElementById('lpInputWrapper');
-
-        if (event.target.type !== 'checkbox') {
-            check.checked = !check.checked;
-        }
-
-        if (check.checked) {
-            wrapper.style.display = 'block';
+    /* --- LOGIC TEMA (DARK/LIGHT) --- */
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            applyTheme('dark');
         } else {
-            wrapper.style.display = 'none';
+            applyTheme('light');
         }
     }
 
-    // Fungsi untuk menampilkan input manual jika user pilih "URL Lain"
-    function checkCustomLP() {
-        const select = document.getElementById('lpInputSelect');
-        const manualInput = document.getElementById('lpInputManual');
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
-        if (select.value === 'custom') {
-            manualInput.style.display = 'block';
-            manualInput.focus();
+        applyTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    function applyTheme(theme) {
+        const html = document.documentElement;
+        const iconSun = document.getElementById('iconSun');
+        const iconMoon = document.getElementById('iconMoon');
+
+        if (theme === 'dark') {
+            html.setAttribute('data-theme', 'dark');
+            iconSun.style.display = 'none';
+            iconMoon.style.display = 'block';
         } else {
-            manualInput.style.display = 'none';
+            html.setAttribute('data-theme', 'light');
+            iconSun.style.display = 'block';
+            iconMoon.style.display = 'none';
         }
+    }
+
+    /* --- LOGIC UTAMA APLIKASI --- */
+    
+    function toggleMasterSwitch() {
+        const isOn = document.getElementById('masterSwitch').checked;
+        const container = document.getElementById('lpContainer');
+        const statusText = document.getElementById('lpStatusText');
+
+        if (isOn) {
+            container.classList.remove('lp-container-disabled');
+            statusText.innerText = "On (aktif)";
+            statusText.style.color = "#48bb78";
+        } else {
+            container.classList.add('lp-container-disabled');
+            statusText.innerText = "Off (tidak ada)";
+            statusText.style.color = "#718096";
+        }
+    }
+
+    // Fungsi Toggle Checkbox (Multi Select)
+    function toggleLPSelection(element) {
+        // Cek apakah switch sudah ON
+        if(!document.getElementById('masterSwitch').checked) return;
+
+        // Toggle class visual
+        element.classList.toggle('selected');
+        
+        // Toggle status checkbox
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
     }
 
     function makeId(length) {
@@ -136,48 +529,121 @@
         return result;
     }
 
+    function resetForm() {
+        document.getElementById('smartlinkInput').value = '';
+        document.getElementById('count').value = '10';
+        document.getElementById('lpCustomInput').value = '';
+        document.getElementById('masterSwitch').checked = false;
+        toggleMasterSwitch();
+        
+        // Uncheck semua LP
+        const items = document.querySelectorAll('.lp-item');
+        items.forEach(item => {
+            item.classList.remove('selected');
+            item.querySelector('input[type="checkbox"]').checked = false;
+        });
+
+        document.getElementById('outputBox').style.display = 'none';
+        document.getElementById('outputList').innerHTML = '';
+        showToast("Form di-reset!");
+    }
+
     function generate() {
         const smartlink = document.getElementById('smartlinkInput').value.trim();
-        const useLP = document.getElementById('useLPCheck').checked;
-        const lpSelectVal = document.getElementById('lpInputSelect').value;
-        const lpManualVal = document.getElementById('lpInputManual').value.trim();
+        const useLP = document.getElementById('masterSwitch').checked;
+        const customUrl = document.getElementById('lpCustomInput').value.trim();
         const count = document.getElementById('count').value;
         const outputDiv = document.getElementById('outputList');
+        const outputBox = document.getElementById('outputBox');
+        const resultCount = document.getElementById('resultCount');
 
         outputDiv.innerHTML = '';
-
         if(!smartlink) { alert("Isi Smartlink dulu!"); return; }
         
-        if(useLP) {
-            if(!lpSelectVal) { alert("Pilih Landing Page dulu dari dropdown!"); return; }
-            if(lpSelectVal === 'custom' && !lpManualVal) { alert("Isi URL Landing Page manual!"); return; }
-        }
+        let urlsToProcess = [];
 
-        for(let i=0; i<count; i++) {
-            const randomCode = makeId(8);
-            let finalLink = "";
-
-            if (!useLP) {
-                // MODE DIRECT
-                const sep = smartlink.includes('?') ? '&' : '?';
-                finalLink = smartlink + sep + randomCode;
+        if (useLP) {
+            // Ambil semua LP yang dicentang
+            const checkedBoxes = document.querySelectorAll('.lp-checkbox:checked');
+            
+            if (customUrl) {
+                urlsToProcess.push(customUrl);
             } else {
-                // MODE LP
-                let lpUrl = (lpSelectVal === 'custom') ? lpManualVal : lpSelectVal;
-                const encodedSmartlink = encodeURIComponent(smartlink);
-                const lpSep = lpUrl.includes('?') ? '&' : '?';
-                finalLink = lpUrl + lpSep + "dest=" + encodedSmartlink + "&id=" + randomCode;
+                if (checkedBoxes.length === 0) {
+                    alert("Silakan pilih minimal satu Landing Page!");
+                    return;
+                }
+                // Ambil URL dari data-url setiap item yang dicentang
+                checkedBoxes.forEach(box => {
+                    urlsToProcess.push(box.parentElement.getAttribute('data-url'));
+                });
             }
-
-            let div = document.createElement('div');
-            div.className = 'item';
-            div.innerHTML = `
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px;">${finalLink}</span>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('${finalLink}')">Salin</button>
-            `;
-            outputDiv.appendChild(div);
         }
+
+        // Generate Loop
+        let totalLinks = 0;
+        
+        // Jika pakai Direct Link (bukan LP)
+        if (!useLP) {
+            for(let i=0; i<count; i++) {
+                const randomCode = makeId(8);
+                const sep = smartlink.includes('?') ? '&' : '?';
+                const finalLink = smartlink + sep + randomCode;
+                addLinkToOutput(finalLink);
+                totalLinks++;
+            }
+        } 
+        // Jika pakai LP (Multi LP)
+        else {
+            urlsToProcess.forEach(lpUrl => {
+                for(let i=0; i<count; i++) {
+                    const randomCode = makeId(8);
+                    const encodedSmartlink = encodeURIComponent(smartlink);
+                    const lpSep = lpUrl.includes('?') ? '&' : '?';
+                    const finalLink = lpUrl + lpSep + "dest=" + encodedSmartlink + "&id=" + randomCode;
+                    addLinkToOutput(finalLink);
+                    totalLinks++;
+                }
+            });
+        }
+
+        outputBox.style.display = 'block';
+        resultCount.innerText = totalLinks;
+        outputBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+
+    function addLinkToOutput(link) {
+        const outputDiv = document.getElementById('outputList');
+        let div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px;">${link}</span>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${link}'); showToast('Link tersalin!')">Salin</button>
+        `;
+        outputDiv.appendChild(div);
+    }
+
+    function copyAll() {
+        const items = document.querySelectorAll('.item span');
+        if (items.length === 0) return;
+
+        let allText = "";
+        items.forEach(item => { allText += item.innerText + "\n"; });
+        
+        navigator.clipboard.writeText(allText).then(() => {
+            showToast("Semua link tersalin!");
+        });
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.className = "show";
+        setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // Jalankan inisialisasi tema saat halaman dimuat
+    window.addEventListener('DOMContentLoaded', initTheme);
 </script>
 
 </body>
