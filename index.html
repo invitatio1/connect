@@ -3,68 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Param Langsung</title>
+    <title>Generator Multi-LP </title>
     <style>
-        body { font-family: sans-serif; background: #eef2f6; padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; } 
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 600px; } 
+        
         h2 { text-align: center; margin-bottom: 20px; color: #333; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .output { margin-top: 20px; }
-        .item { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 13px; }
-        .copy { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
+        
+        input[type="text"], input[type="number"], select { 
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; 
+        }
+        input:focus, select:focus { border-color: #007bff; outline: none; }
+
+        /* Toggle Box */
+        .toggle-box {
+            background: #eef2f6;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dde1e6;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .toggle-box input { width: 20px; height: 20px; margin-right: 12px; cursor: pointer; }
+        .toggle-text { font-weight: bold; color: #333; }
+        .toggle-sub { display: block; font-size: 12px; color: #666; margin-top: 2px; }
+
+        /* Dynamic Wrapper */
+        #lpInputWrapper {
+            display: none; 
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        button { 
+            width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 6px; 
+            font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; 
+        } 
+        button:hover { background: #0056b3; } 
+
+        .output-box { margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px; }
+        .item { background: #f8f9fa; border: 1px solid #eee; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 12px; }
+        .copy-btn { background: #e9ecef; border: 1px solid #ccc; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Generator Direct Param</h2>
-    
-    <input type="text" id="urlInput" placeholder="Tempel link di sini...">
-    
-    <button onclick="generate()">Buat Link</button>
+    <h2>Generator Multi-LP</h2>
 
-    <div class="output" id="output"></div>
+    <!-- Input Smartlink Utama -->
+    <div class="form-group">
+        <label>Smartlink Asli (Tujuan Akhir)</label>
+        <input type="text" id="smartlinkInput" placeholder="https://utnp2r2.bests-meetthesite.com/dhv2005?s1=DIINARYO&cid=funnn006">
+    </div>
+
+    <!-- Toggle Gunakan LP -->
+    <div class="toggle-box" onclick="toggleLP()">
+        <input type="checkbox" id="useLPCheck" onclick="event.stopPropagation(); toggleLP()">
+        <div>
+            <div class="toggle-text">Gunakan Landing Page?</div>
+        </div>
+    </div>
+
+    <!-- Input/Select URL LP -->
+    <div class="form-group" id="lpInputWrapper">
+        <label>Pilih Landing Page:</label>
+        
+        <!-- Dropdown List LP -->
+        <select id="lpInputSelect" onchange="checkCustomLP()">
+            <option value="">-- Pilih Landing Page --</option>
+            <option value="https://invitatio1.github.io/lp1/">LP 1 (invitatio1)</option>
+            <option value="https://invitatio1.github.io/lp2/">LP 2 (invitatio1)</option>
+            <option value="https://invitatio1.github.io/lp3/">LP 3 (invitatio1)</option>
+        </select>
+
+        <!-- Input Manual (Hanya muncul jika pilih 'custom') -->
+        <input type="text" id="lpInputManual" placeholder="Paste URL lain disini..." style="display:none; margin-top:10px;">
+        
+        <div style="font-size:11px; color:#e74c3c; margin-top:5px;">Pastikan file LP sudah dipasang script redirect!</div>
+    </div>
+
+    <div class="form-group">
+        <label>Jumlah Link</label>
+        <input type="number" id="count" value="10" min="1">
+    </div>
+
+    <button onclick="generate()">Generate Link</button>
+
+    <div id="outputList" class="output-box"></div>
 </div>
 
 <script>
-    function generate() {
-        let url = document.getElementById('urlInput').value.trim();
-        const output = document.getElementById('output');
-        output.innerHTML = '';
+    function toggleLP() {
+        const check = document.getElementById('useLPCheck');
+        const wrapper = document.getElementById('lpInputWrapper');
 
-        if(!url) return alert("Isi link dulu gan!");
-
-        // Fungsi random string Campuran (A-z, 0-9)
-        function makeId(length) {
-            let result = '';
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            for (let i = 0; i < length; i++) {
-                result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
+        if (event.target.type !== 'checkbox') {
+            check.checked = !check.checked;
         }
 
-        // Generate 5 link contoh
-        for(let i=0; i<5; i++) {
-            const randomCode = makeId(8); // Panjang 8 karakter
-            
-            // Cek apakah link sudah ada tanda tanya (?)
-            // Jika sudah ada pakai &, jika belum pakai ?
-            let separator = url.includes('?') ? '&' : '?';
-            
-            // Gabungkan: URL + Separator + RandomString (Tanpa nama parameter 'id=')
-            let finalLink = url + separator + randomCode;
+        if (check.checked) {
+            wrapper.style.display = 'block';
+        } else {
+            wrapper.style.display = 'none';
+        }
+    }
 
-            // Tampilkan
+    // Fungsi untuk menampilkan input manual jika user pilih "URL Lain"
+    function checkCustomLP() {
+        const select = document.getElementById('lpInputSelect');
+        const manualInput = document.getElementById('lpInputManual');
+        
+        if (select.value === 'custom') {
+            manualInput.style.display = 'block';
+            manualInput.focus();
+        } else {
+            manualInput.style.display = 'none';
+        }
+    }
+
+    function makeId(length) {
+        let result = '';
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    function generate() {
+        const smartlink = document.getElementById('smartlinkInput').value.trim();
+        const useLP = document.getElementById('useLPCheck').checked;
+        const lpSelectVal = document.getElementById('lpInputSelect').value;
+        const lpManualVal = document.getElementById('lpInputManual').value.trim();
+        const count = document.getElementById('count').value;
+        const outputDiv = document.getElementById('outputList');
+
+        outputDiv.innerHTML = '';
+
+        if(!smartlink) { alert("Isi Smartlink dulu!"); return; }
+        
+        if(useLP) {
+            if(!lpSelectVal) { alert("Pilih Landing Page dulu dari dropdown!"); return; }
+            if(lpSelectVal === 'custom' && !lpManualVal) { alert("Isi URL Landing Page manual!"); return; }
+        }
+
+        for(let i=0; i<count; i++) {
+            const randomCode = makeId(8);
+            let finalLink = "";
+
+            if (!useLP) {
+                // MODE DIRECT
+                const sep = smartlink.includes('?') ? '&' : '?';
+                finalLink = smartlink + sep + randomCode;
+            } else {
+                // MODE LP
+                let lpUrl = (lpSelectVal === 'custom') ? lpManualVal : lpSelectVal;
+                const encodedSmartlink = encodeURIComponent(smartlink);
+                const lpSep = lpUrl.includes('?') ? '&' : '?';
+                finalLink = lpUrl + lpSep + "dest=" + encodedSmartlink + "&id=" + randomCode;
+            }
+
             let div = document.createElement('div');
             div.className = 'item';
             div.innerHTML = `
-                <span>${finalLink}</span>
-                <button class="copy" onclick="navigator.clipboard.writeText('${finalLink}')">Salin</button>
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:10px;">${finalLink}</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('${finalLink}')">Salin</button>
             `;
-            output.appendChild(div);
+            outputDiv.appendChild(div);
         }
     }
 </script>
