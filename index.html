@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Multi-LP Ultra Compact</title>
+    <title>Generator Multi-LP</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♾️</text></svg>">
     <style>
         /* --- CSS VARIABLES (THEMING) --- */
         :root {
@@ -381,7 +382,7 @@
     <!-- Input Smartlink Utama -->
     <div class="form-group">
         <label>Smartlink Asli</label>
-        <input type="text" id="smartlinkInput" placeholder="">
+        <input type="text" id="smartlinkInput" placeholder="https://smartlink.com/?ref=user">
     </div>
 
     <!-- Admin Panel LP Section (Ultra Compact) -->
@@ -502,7 +503,7 @@
             statusText.style.color = "#48bb78";
         } else {
             container.classList.add('lp-container-disabled');
-            statusText.innerText = "Off (tidak ada)";
+            statusText.innerText = "Off (Direct)";
             statusText.style.color = "#718096";
         }
     }
@@ -552,14 +553,16 @@
         const smartlink = document.getElementById('smartlinkInput').value.trim();
         const useLP = document.getElementById('masterSwitch').checked;
         const customUrl = document.getElementById('lpCustomInput').value.trim();
-        const count = document.getElementById('count').value;
+        const count = parseInt(document.getElementById('count').value);
+        
         const outputDiv = document.getElementById('outputList');
         const outputBox = document.getElementById('outputBox');
         const resultCount = document.getElementById('resultCount');
 
         outputDiv.innerHTML = '';
         if(!smartlink) { alert("Isi Smartlink dulu!"); return; }
-        
+        if(isNaN(count) || count < 1) { alert("Jumlah link tidak valid!"); return; }
+
         let urlsToProcess = [];
 
         if (useLP) {
@@ -593,18 +596,23 @@
                 totalLinks++;
             }
         } 
-        // Jika pakai LP (Multi LP)
+        // Jika pakai LP (Multi LP) - LOGIC DIPERBAIKI
         else {
-            urlsToProcess.forEach(lpUrl => {
-                for(let i=0; i<count; i++) {
-                    const randomCode = makeId(8);
-                    const encodedSmartlink = encodeURIComponent(smartlink);
-                    const lpSep = lpUrl.includes('?') ? '&' : '?';
-                    const finalLink = lpUrl + lpSep + "dest=" + encodedSmartlink + "&id=" + randomCode;
-                    addLinkToOutput(finalLink);
-                    totalLinks++;
-                }
-            });
+            // Kita looping sebanyak 'count', bukan sebanyak jumlah LP
+            for(let i=0; i<count; i++) {
+                // Pilih satu URL LP secara acak dari daftar yang tersedia
+                // Math.random() * urlsToProcess.length memberikan index antara 0 sampai jumlah LP - 1
+                const randomIndex = Math.floor(Math.random() * urlsToProcess.length);
+                const lpUrl = urlsToProcess[randomIndex];
+
+                const randomCode = makeId(8);
+                const encodedSmartlink = encodeURIComponent(smartlink);
+                const lpSep = lpUrl.includes('?') ? '&' : '?';
+                const finalLink = lpUrl + lpSep + "dest=" + encodedSmartlink + "&id=" + randomCode;
+                
+                addLinkToOutput(finalLink);
+                totalLinks++;
+            }
         }
 
         outputBox.style.display = 'block';
