@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Param Langsung</title>
+    <style>
+        body { font-family: sans-serif; background: #eef2f6; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        h2 { text-align: center; margin-bottom: 20px; color: #333; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .output { margin-top: 20px; }
+        .item { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 13px; }
+        .copy { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Generator Direct Param</h2>
+    
+    <input type="text" id="urlInput" placeholder="Tempel link di sini...">
+    
+    <button onclick="generate()">Buat Link</button>
+
+    <div class="output" id="output"></div>
+</div>
+
+<script>
+    function generate() {
+        let url = document.getElementById('urlInput').value.trim();
+        const output = document.getElementById('output');
+        output.innerHTML = '';
+
+        if(!url) return alert("Isi link dulu gan!");
+
+        // Fungsi random string Campuran (A-z, 0-9)
+        function makeId(length) {
+            let result = '';
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // Generate 5 link contoh
+        for(let i=0; i<5; i++) {
+            const randomCode = makeId(8); // Panjang 8 karakter
+            
+            // Cek apakah link sudah ada tanda tanya (?)
+            // Jika sudah ada pakai &, jika belum pakai ?
+            let separator = url.includes('?') ? '&' : '?';
+            
+            // Gabungkan: URL + Separator + RandomString (Tanpa nama parameter 'id=')
+            let finalLink = url + separator + randomCode;
+
+            // Tampilkan
+            let div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = `
+                <span>${finalLink}</span>
+                <button class="copy" onclick="navigator.clipboard.writeText('${finalLink}')">Salin</button>
+            `;
+            output.appendChild(div);
+        }
+    }
+</script>
+
+</body>
+</html>
